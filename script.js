@@ -1,35 +1,41 @@
 const ACCESS_KEY = '6nSf817o_i0BmrpDw6mPEd_DIsbzj4QcbNLcqHSbhws';
-const COUNT = 30;
-const UNSPLASH_URL = `https://api.unsplash.com/photos/random?client_id=${ACCESS_KEY}&count=${COUNT}`;
+let count = 5;
+let unsplashUrl = `https://api.unsplash.com/photos/random?client_id=${ACCESS_KEY}&count=${count}`;
 
 const imageContainer = document.querySelector('#image-container');
 const loader = document.querySelector('#loader-container');
 
+// Initialize variables
 let ready = false;
 let imagesLoaded = 0;
 let totalImages = 0;
 
+// Increase image count after initial load
+function increaseLoadedImages() {
+  count = 30;
+  unsplashUrl = `https://api.unsplash.com/photos/random?client_id=${ACCESS_KEY}&count=${count}`;
+}
+
+// Sets the variables once all images has loaded
 function imageLoaded() {
   imagesLoaded++;
-  console.log('image loaded', imagesLoaded); // CHECKING
   if (imagesLoaded === totalImages) {
+    increaseLoadedImages();
     loader.hidden = true;
     ready = true;
     imagesLoaded = 0;
-    console.log('ready', ready) // CHECKING
   }
 }
 
-// attributes is an object
+// setAttributes function to avoid repetition on setting attributes.
 function setAttributes(element, attributes) {
   for (let key in attributes) {
     element.setAttribute(key, attributes[key]);
   }
 }
-
+// Creates a new <a> element with nested <img> to display images and allow users to be redirected to unsplash website
 function displayImages(arr) {
   totalImages = arr.length;
-  console.log('total image', totalImages); // CHECKING
 
   arr.forEach(image => {
     // create <a> element 
@@ -46,21 +52,22 @@ function displayImages(arr) {
       alt: image.alt_description,
       title: image.alt_description
     })
-
-    // listens to load of images
-    img.addEventListener('load', imageLoaded);
-
+    
     // nest child <img> inside parent <a>
     item.appendChild(img); 
-
-    // nest <a> to image-container
+    
+    // nest <a> to #image-container
     imageContainer.appendChild(item);
+
+    // listens to every load of an image and calls imageLoaded()
+    img.addEventListener('load', imageLoaded);
   })
 }
 
+// Fetches images from Unspash API
 async function getImages() {
   try {
-    const response = await fetch(UNSPLASH_URL);
+    const response = await fetch(unsplashUrl);
     const imagesArray = await response.json();
     displayImages(imagesArray);
   } catch (err) {
@@ -68,7 +75,7 @@ async function getImages() {
   }
 }
 
-// infinite scroll functionality
+// Infinite scroll functionality
 window.addEventListener('scroll', () => {
   if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000 && ready) {
     ready = false;
@@ -76,5 +83,5 @@ window.addEventListener('scroll', () => {
   }
 })
 
-// on load
+// On load of script
 getImages();
